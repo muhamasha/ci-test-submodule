@@ -104,6 +104,16 @@ if clangformat.found()
 		]
 	)
 
+	run_target('check-format',
+		command: [
+			clangformat_script,
+			# Enable check mode
+			'-c',
+			# Supply arguments
+			clangformat_args
+		]
+	)
+
 	run_target('format-patch',
 		command: [
 			clangformat_script,

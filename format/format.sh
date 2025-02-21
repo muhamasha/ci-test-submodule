@@ -25,13 +25,16 @@ MESON_SOURCE_ROOT=${MESON_SOURCE_ROOT:-../../}
 FILE_TYPES=
 EXCLUDES_ARGS=
 PATCH='0'
+CHECK_FORMAT='0'
 
-while getopts "e:p" opt; do
+while getopts "e:p:c" opt; do
   case $opt in
     e) EXCLUDES_ARGS="$OPTARG"
     ;;
     p) PATCH='1'
     ;;
+	c) CHECK_FORMAT='1'
+	;;
     \?) echo "Invalid option -$OPTARG" >&2
     ;;
   esac
@@ -65,8 +68,15 @@ else
 fi
 
 cd ${MESON_SOURCE_ROOT}
-eval find ${DIRS[@]} ${EXCLUDES} -type f ${FILE_TYPES} \
-	| xargs clang-format -style=file -i -fallback-style=none
+
+if [ "$CHECK_FORMAT" == '1' ]; then
+	echo "Check format will be performed"
+	eval find ${DIRS[@]} ${EXCLUDES} -type f ${FILE_TYPES} \
+		| xargs clang-format --dry-run --Werror -style=file -output-replacements-xml
+else
+	eval find ${DIRS[@]} ${EXCLUDES} -type f ${FILE_TYPES} \
+		| xargs clang-format -style=file -i -fallback-style=none
+fi
 
 if [ "$PATCH" == '1' ]; then
 	git diff > clang_format.patch
